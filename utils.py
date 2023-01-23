@@ -15,6 +15,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 import time
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def overview_data(df, name):
@@ -37,7 +38,8 @@ def overview_data(df, name):
     return subjects, cases
 
 
-def cross_grid_validation(algorithm, pre, param_grid, X_train, y_train, X_test, y_test, scoring, nfolds=5):
+def cross_grid_validation(algorithm, pre, param_grid, X_train, y_train, X_test, y_test,
+                          scoring, dataplot, subjects, nfolds=5):
     time0 = time.time()
     model = []
     preprocess = []
@@ -51,11 +53,19 @@ def cross_grid_validation(algorithm, pre, param_grid, X_train, y_train, X_test, 
     grid_search.fit(X_train, y_train)
     vect = grid_search.best_estimator_.named_steps['preprocess']
     if 'vectorizer' in str(vect).lower():
-        vect.fit(X_train)
         feature_names = vect.get_feature_names_out()
-        print('Vectorizer to assess the vocabulary:\n{}'.format(str(vect)))
-        print('Number of features in the bag of words: {}'.format(len(feature_names)))
-        print('First 50 features:\n{}\n'.format(feature_names[:50]))
+        print('Best estimator preprocessing: {}'.format(str(vect)))
+        print('Number of features in the bag of words: {}\n'.format(len(feature_names)))
+    else:
+        feature_names = ''
+    alg = grid_search.best_estimator_.named_steps['classifier']
+    if 'linear' in str(alg).lower() or 'logistic' in str(alg).lower() or 'svc' in str(alg).lower():
+        coeffs = alg.coef_
+        for i in range(coeffs.shape[0]):
+            max_coeffs = np.argsort(-coeffs[i, :])
+            min_coeffs = np.argsort(coeffs[i, :])
+            dataplot.plot_model_coeffs(coeffs[i], max_coeffs, min_coeffs, feature_names, subjects[i], vect)
+    print('Best estimator classifier: {}\n'.format(str(alg)))
     print('Best parameters: {}'.format(grid_search.best_params_))
     print('Best cross-validation score: {:.4f}'.format(grid_search.best_score_))
     print('Test set score: {:.4f}'.format(grid_search.score(X_test, y_test)))
@@ -70,10 +80,11 @@ def create_preprocess(pre):
         preprocess = StandardScaler()
     elif 'count' in pre.lower():
         preprocess = CountVectorizer()
-    elif 'tfid' in pre.lower():
+    elif 'tfidf' in pre.lower():
         preprocess = TfidfVectorizer(norm=None)
     else:
         preprocess = None
+        print('WARNING: no preprocessor was selected\n')
     return preprocess
 
 
