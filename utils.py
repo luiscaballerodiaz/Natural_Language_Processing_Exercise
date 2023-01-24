@@ -59,13 +59,13 @@ def cross_grid_validation(algorithm, pre, param_grid, X_train, y_train, X_test, 
     return grid_search
 
 
-def logreg_coeffs_comparison(X_train, y_train, dataplot, subjects, C=1):
+def logreg_coeffs_comparison(X_train, y_train, dataplot, subjects, ngrams=1, C=1):
     param_grid = [{'classifier': [], 'preprocess': [],
-                  'preprocess__stop_words': ['english'], 'preprocess__ngram_range': [(1, 3)], 'classifier__C': []}]
+                  'preprocess__stop_words': ['english'], 'preprocess__ngram_range': [(1, ngrams)], 'classifier__C': []}]
     model = create_model('logistic regression')
     param_grid[0]['classifier'] = [model]
     param_grid[0]['classifier__C'] = [C]
-    for i in range(1,2):
+    for i in range(2):
         if i == 0:
             preprocess = create_preprocess('count')
         else:
@@ -79,7 +79,8 @@ def logreg_coeffs_comparison(X_train, y_train, dataplot, subjects, C=1):
         for i in range(coeffs.shape[0]):
             max_coeffs = np.argsort(-coeffs[i, :])
             min_coeffs = np.argsort(coeffs[i, :])
-            dataplot.plot_logreg_coeffs(coeffs[i], max_coeffs, min_coeffs, feature_names, subjects[i], C, preprocess)
+            dataplot.plot_logreg_coeffs(coeffs[i], max_coeffs, min_coeffs, feature_names,
+                                        subjects[i], C, preprocess, ngrams)
 
 
 def create_preprocess(pre):

@@ -211,7 +211,7 @@ class DataPlots:
         print('Full dataset words with higher TFID: {}\n'.format(high_tfid))
         print('Full dataset words with lower TFID: {}\n'.format(low_tfid))
 
-    def plot_logreg_coeffs(self, coeffs, max_coeffs, min_coeffs, feature_names, subject, C, method):
+    def plot_logreg_coeffs(self, coeffs, max_coeffs, min_coeffs, feature_names, subject, C, method, ngrams):
         max_words = round(self.max_words / 2)
         feat_max = feature_names[max_coeffs[:max_words]]
         feat_min = feature_names[min_coeffs[:max_words]]
@@ -233,6 +233,9 @@ class DataPlots:
                         ' and ' + str(method)[:15],
                         fontsize=18, fontweight='bold')
         fig.tight_layout()
+        plt_ngrams = ''
+        if ngrams > 1:
+            plt_ngrams = ' with n-grams'
         plt.savefig('Coefficient analysis ' + subject.upper() + ' - ' + str(method)[:15] + ' LOGREG model C= ' +
-                    str(C) + '.png', bbox_inches='tight')
+                    str(C) + plt_ngrams + '.png', bbox_inches='tight')
         plt.clf()
