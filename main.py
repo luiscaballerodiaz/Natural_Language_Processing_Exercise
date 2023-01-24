@@ -25,20 +25,21 @@ subjects_list[2], cases_list[2] = utils.overview_data(y_test, data[2])
 # visualization.pie_plot(subjects_list, cases_list, data)
 
 # Coefficients analysis
-utils.logreg_coeffs_comparison(X_train, y_train, visualization, subjects_list[1], C=1, ngrams=1)
+#utils.logreg_coeffs_comparison(X_train, y_train, visualization, subjects_list[1], C=1, ngrams=1)
 
 # Grid search and model optimization
-# algorithm = ['logistic regression', 'logistic regression']
-# preprocess = ['count', 'tfidf']
-# scoring = 'accuracy'
-# params = [
-#     {'classifier': [], 'preprocess': [],
-#      'preprocess__stop_words': ['english'], 'preprocess__min_df': [1, 2, 3, 4, 5], 'preprocess__max_df': [1.0],
-#      'preprocess__ngram_range': [(1, 1)], 'classifier__C': [1]},
-#     {'classifier': [], 'preprocess': [],
-#      'preprocess__stop_words': ['english'], 'preprocess__min_df': [1], 'preprocess__max_df': [1.0],
-#      'preprocess__ngram_range': [(1, 1)], 'classifier__C': [1]}]
-# grid = utils.cross_grid_validation(algorithm, preprocess, params,
-#                                    X_train['eng'], y_train, X_test['eng'], y_test, scoring, 5)
-# pd_grid = pd.DataFrame(grid.cv_results_)
-# print(pd_grid)
+scoring = 'accuracy'
+params = [
+    {'classifier': ['logistic regression'], 'preprocess': ['count', 'tfidf'],
+     'preprocess__stop_words': ['english'], 'preprocess__min_df': [1], 'preprocess__max_df': [1.0],
+     'preprocess__ngram_range': [(1, 1), (1, 2), (1, 3)], 'classifier__C': [0.0001, 0.001, 0.01, 0.1, 1, 10]},
+    {'classifier': ['linear svc'], 'preprocess': ['count', 'tfidf'],
+     'preprocess__stop_words': ['english'], 'preprocess__min_df': [1], 'preprocess__max_df': [1.0],
+     'preprocess__ngram_range': [(1, 1), (1, 2), (1, 3)], 'classifier__C': [0.0001, 0.001, 0.01, 0.1, 1, 10]},
+    {'classifier': ['multinomial'], 'preprocess': ['count', 'tfidf'],
+     'preprocess__stop_words': ['english'], 'preprocess__min_df': [1], 'preprocess__max_df': [1.0],
+     'preprocess__ngram_range': [(1, 1), (1, 2), (1, 3)], 'classifier__alpha': [0.1, 0.5, 1, 5, 10]}]
+grid = utils.cross_grid_validation(params, X_train, y_train, X_test, y_test, scoring, 5)
+pd_grid = pd.DataFrame(grid.cv_results_)
+print(pd_grid)
+utils.param_sweep_matrix(visualization, params=pd_grid['params'], test_score=pd_grid['mean_test_score'])
