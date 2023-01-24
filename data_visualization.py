@@ -163,7 +163,7 @@ class DataPlots:
                     ' stop_words=' + str(stop_words) + '.png', bbox_inches='tight')
         plt.clf()
 
-        # # Word counting per subject
+        # Length counting per subject
         length_subject = [''] * len(subjects)
         for i, subject in zip(range(len(subjects)), subjects):
             data_filter = data['eng'].loc[(data['Subject'] == subject)]
@@ -211,26 +211,28 @@ class DataPlots:
         print('Full dataset words with higher TFID: {}\n'.format(high_tfid))
         print('Full dataset words with lower TFID: {}\n'.format(low_tfid))
 
-    def plot_model_coeffs(self, coeffs, max_coeffs, min_coeffs, feature_names, subject, method):
-        feat_max = feature_names[max_coeffs[:self.max_words]]
-        feat_min = feature_names[min_coeffs[:self.max_words]]
-        fig, axes = plt.subplots(2, 1, figsize=(self.fig_width, self.fig_height))
+    def plot_logreg_coeffs(self, coeffs, max_coeffs, min_coeffs, feature_names, subject, C, method):
+        max_words = round(self.max_words / 2)
+        feat_max = feature_names[max_coeffs[:max_words]]
+        feat_min = feature_names[min_coeffs[:max_words]]
+        fig, axes = plt.subplots(1, 2, figsize=(self.fig_width, self.fig_height))
         ax = axes.ravel()
-        ax[0].bar(range(1, self.max_words + 1), coeffs[max_coeffs[:self.max_words]], color='b', width=self.bar_width,
-                  edgecolor='black')
-        ax[0].set_xticks(range(1, self.max_words + 1), feat_max, ha='center', rotation=90)
-        ax[1].bar(range(1, self.max_words + 1), coeffs[min_coeffs[:self.max_words]], color='r', width=self.bar_width,
-                  edgecolor='black')
-        ax[1].set_xticks(range(1, self.max_words + 1), feat_min, ha='center', rotation=90)
+        ax[0].barh(range(1, max_words + 1), coeffs[max_coeffs[:max_words]], color='b', height=self.bar_width,
+                   edgecolor='black')
+        ax[0].set_yticks(range(1, max_words + 1), feat_max, va='center', rotation=0)
+        ax[1].barh(range(1, max_words + 1), coeffs[min_coeffs[:max_words]], color='r', height=self.bar_width,
+                   edgecolor='black')
+        ax[1].set_yticks(range(1, max_words + 1), feat_min, va='center', rotation=0)
         for i in range(2):
             ax[i].grid(visible=True)
-            ax[i].tick_params(axis='both', labelsize=14)
-            ax[i].set_ylabel('Coefficients', fontsize=14)
-            ax[i].set_xlabel('Feature names', fontsize=14)
-        ax[0].set_title('Largest model coefficients for ' + subject.upper() + ' and method ' + str(method)[:15],
-                        fontsize=18, fontweight='bold')
-        ax[1].set_title('Smallest model coefficients for ' + subject.upper() + ' and method ' + str(method)[:15],
+            ax[i].set_xlabel('Coefficients', fontsize=14)
+            ax[i].set_ylabel('Feature names', fontsize=14)
+        ax[0].set_title('Largest coeffs for ' + subject.upper() + ', LOGREG C= ' + str(C) +
+                        ' and ' + str(method)[:15], fontsize=18, fontweight='bold')
+        ax[1].set_title('Smallest coeffs for ' + subject.upper() + ', LOGREG C= ' + str(C) +
+                        ' and ' + str(method)[:15],
                         fontsize=18, fontweight='bold')
         fig.tight_layout()
-        plt.savefig('Coefficient analysis ' + str(method)[:15] + ' ' + subject.upper() + '.png', bbox_inches='tight')
+        plt.savefig('Coefficient analysis ' + subject.upper() + ' - ' + str(method)[:15] + ' LOGREG model C= ' +
+                    str(C) + '.png', bbox_inches='tight')
         plt.clf()

@@ -38,8 +38,7 @@ def overview_data(df, name):
     return subjects, cases
 
 
-def cross_grid_validation(algorithm, pre, param_grid, X_train, y_train, X_test, y_test,
-                          scoring, dataplot, subjects, nfolds=5):
+def cross_grid_validation(algorithm, pre, param_grid, X_train, y_train, X_test, y_test, scoring, nfolds=5):
     time0 = time.time()
     model = []
     preprocess = []
@@ -51,26 +50,36 @@ def cross_grid_validation(algorithm, pre, param_grid, X_train, y_train, X_test, 
     pipe = Pipeline([('preprocess', preprocess), ('classifier', model)])
     grid_search = GridSearchCV(pipe, param_grid, cv=nfolds, scoring=scoring)
     grid_search.fit(X_train, y_train)
-    vect = grid_search.best_estimator_.named_steps['preprocess']
-    if 'vectorizer' in str(vect).lower():
-        feature_names = vect.get_feature_names_out()
-        print('Best estimator preprocessing: {}'.format(str(vect)))
-        print('Number of features in the bag of words: {}\n'.format(len(feature_names)))
-    else:
-        feature_names = ''
-    alg = grid_search.best_estimator_.named_steps['classifier']
-    if 'linear' in str(alg).lower() or 'logistic' in str(alg).lower() or 'svc' in str(alg).lower():
-        coeffs = alg.coef_
-        for i in range(coeffs.shape[0]):
-            max_coeffs = np.argsort(-coeffs[i, :])
-            min_coeffs = np.argsort(coeffs[i, :])
-            dataplot.plot_model_coeffs(coeffs[i], max_coeffs, min_coeffs, feature_names, subjects[i], vect)
-    print('Best estimator classifier: {}\n'.format(str(alg)))
+    print('Best estimator preprocessing: {}'.format(str(grid_search.best_estimator_.named_steps['preprocess'])))
+    print('Best estimator classifier: {}\n'.format(str(grid_search.best_estimator_.named_steps['classifier'])))
     print('Best parameters: {}'.format(grid_search.best_params_))
     print('Best cross-validation score: {:.4f}'.format(grid_search.best_score_))
     print('Test set score: {:.4f}'.format(grid_search.score(X_test, y_test)))
     print('Grid search time: {:.1f}\n'.format(time.time() - time0))
     return grid_search
+
+
+def logreg_coeffs_comparison(X_train, y_train, dataplot, subjects, C=1):
+    param_grid = [{'classifier': [], 'preprocess': [],
+                  'preprocess__stop_words': ['english'], 'preprocess__ngram_range': [(1, 3)], 'classifier__C': []}]
+    model = create_model('logistic regression')
+    param_grid[0]['classifier'] = [model]
+    param_grid[0]['classifier__C'] = [C]
+    for i in range(1,2):
+        if i == 0:
+            preprocess = create_preprocess('count')
+        else:
+            preprocess = create_preprocess('tfidf')
+        param_grid[0]['preprocess'] = [preprocess]
+        pipe = Pipeline([('preprocess', preprocess), ('classifier', model)])
+        grid_search = GridSearchCV(pipe, param_grid, cv=2)
+        grid_search.fit(X_train, y_train)
+        feature_names = grid_search.best_estimator_.named_steps['preprocess'].get_feature_names_out()
+        coeffs = grid_search.best_estimator_.named_steps['classifier'].coef_
+        for i in range(coeffs.shape[0]):
+            max_coeffs = np.argsort(-coeffs[i, :])
+            min_coeffs = np.argsort(coeffs[i, :])
+            dataplot.plot_logreg_coeffs(coeffs[i], max_coeffs, min_coeffs, feature_names, subjects[i], C, preprocess)
 
 
 def create_preprocess(pre):
