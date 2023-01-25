@@ -15,6 +15,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 import time
+import math
 import numpy as np
 
 
@@ -218,40 +219,63 @@ def param_sweep_matrix(dataplot, params, test_score):
             dataplot.plot_params_sweep(models[m], test_matrix, feat_name_unique,
                                        xtick=feat_sweep[1], xtag=feat_name_sweep[1],
                                        ytick=feat_sweep[0], ytag=feat_name_sweep[0])
-        if len(feat_sweep) == 3:
+        if len(feat_sweep) >= 3:
             feat_sweep_bu = feat_sweep.copy()
             feat_name_sweep_bu = feat_name_sweep.copy()
             feat_index_bu = feat_index.copy()
             dims = []
             for i in range(len(feat_sweep)):
                 dims.append(len(feat_sweep[i]))
-            if min(dims) == dims[1]:
-                feat_sweep[0] = feat_sweep_bu[1]
-                feat_sweep[1] = feat_sweep_bu[0]
-                feat_name_sweep[0] = feat_name_sweep_bu[1]
-                feat_name_sweep[1] = feat_name_sweep_bu[0]
-                feat_index[0] = feat_index_bu[1]
-                feat_index[1] = feat_index_bu[0]
-            elif min(dims) == dims[2]:
-                feat_sweep[0] = feat_sweep_bu[2]
-                feat_sweep[2] = feat_sweep_bu[0]
-                feat_name_sweep[0] = feat_name_sweep_bu[2]
-                feat_name_sweep[2] = feat_name_sweep_bu[0]
-                feat_index[0] = feat_index_bu[2]
-                feat_index[2] = feat_index_bu[0]
-            test_matrix = np.zeros([len(feat_sweep[1]), len(feat_sweep[2]), len(feat_sweep[0])])
-            for p in range(len(feat_sweep[0])):
-                for j in range(len(feat_sweep[1])):
-                    for h in range(len(feat_sweep[2])):
+            for i in range(2):
+                index_max = dims.index(max(dims))
+                dims[index_max] = 0
+                feat_sweep[i] = feat_sweep_bu[index_max]
+                feat_name_sweep[i] = feat_name_sweep_bu[index_max]
+                feat_index[i] = feat_index_bu[index_max]
+                feat_sweep[index_max] = feat_sweep_bu[i]
+                feat_name_sweep[index_max] = feat_name_sweep_bu[i]
+                feat_index[index_max] = feat_index_bu[i]
+            depth = 1
+            for i in range(2, len(feat_sweep)):
+                depth *= len(feat_sweep[i])
+            zfeat = [[] for _ in range(depth)]
+            ztag = [[] for _ in range(depth)]
+            for i in range(depth):
+                for j in range(2, len(feat_sweep)):
+                    ztag[i].append(feat_name_sweep[j])
+            for j in range(2, len(feat_sweep)):
+                ind = 0
+                ind_split = 0
+                cum_depth = 0
+                for h in range(j, len(feat_sweep)):
+                    cum_depth += len(feat_sweep[h])
+                for i in range(depth):
+                    split = math.ceil((cum_depth / len(feat_sweep[j])))
+                    if ind_split == split:
+                        ind_split = 0
+                        ind += 1
+                        if ind == len(feat_sweep[j]):
+                            ind = 0
+                    zfeat[i].append(feat_sweep[j][ind])
+                    ind_split += 1
+            test_matrix = np.zeros([len(feat_sweep[0]), len(feat_sweep[1]), depth])
+            for p in range(depth):
+                for j in range(len(feat_sweep[0])):
+                    for h in range(len(feat_sweep[1])):
                         test_index = 0
                         for r in range(len(test)):
-                            if feat_sweep[2][h] == feat[feat_index[2]][r] \
-                                    and feat_sweep[1][j] == feat[feat_index[1]][r]\
-                                    and feat_sweep[0][p] == feat[feat_index[0]][r]:
-                                test_index = r
-                                break
+                            if feat_sweep[1][h] == feat[feat_index[1]][r] \
+                                    and feat_sweep[0][j] == feat[feat_index[0]][r]:
+                                for t in range(2, len(feat_sweep)):
+                                    if zfeat[p][t - 2] == feat[feat_index[t]][r]:
+                                        if t == (len(feat_sweep) - 1):
+                                            test_index = r
+                                        else:
+                                            continue
+                                    else:
+                                        break
                         test_matrix[j, h, p] = test[test_index]
-                dataplot.plot_params_sweep(models[m], test_matrix, feat_name_unique,
-                                           xtick=feat_sweep[2], xtag=feat_name_sweep[2],
-                                           ytick=feat_sweep[1], ytag=feat_name_sweep[1],
-                                           ztick=feat_sweep[0], ztag=feat_name_sweep[0])
+            dataplot.plot_params_sweep(models[m], test_matrix, feat_name_unique,
+                                       xtick=feat_sweep[1], xtag=feat_name_sweep[1],
+                                       ytick=feat_sweep[0], ytag=feat_name_sweep[0],
+                                       ztick=zfeat, ztag=ztag)

@@ -255,7 +255,7 @@ class DataPlots:
             ax.set_title('Test score sweep ' + ztag.upper() + ' with ' + algorithm.upper() +
                          '\n' + str(fixed_params), fontsize=24)
             ax.set_xticks(np.arange(0.5, len(xtick) + 0.5), labels=xtick, fontsize=14)
-            plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+            plt.setp(ax.get_xticklabels(), rotation=0, ha="right", rotation_mode="anchor")
             ax.set_yticks(np.arange(0.5, len(ytick) + 0.5), labels=ytick, fontsize=14)
             ax.text(0.5, 0.5, str(round(test_values[0, 0], 4)),
                     ha="center", va="center", color="k", fontweight='bold', fontsize=10)
@@ -282,17 +282,20 @@ class DataPlots:
                 divider = make_axes_locatable(ax[p])
                 cax = divider.append_axes('right', size='5%', pad=0.05)
                 fig.colorbar(pcm, cax=cax, orientation='vertical')
-                ax[p].set_xlabel('Parameter sweep ' + xtag.upper(), fontsize=14)
-                ax[p].set_ylabel('Parameter sweep ' + ytag.upper(), fontsize=14)
-                ax[p].set_title('Parameter ' + ztag.upper() + '=' + str(ztick[p]), fontsize=24)
+                ax[p].set_xlabel('Parameter sweep ' + xtag.upper(), fontsize=16)
+                ax[p].set_ylabel('Parameter sweep ' + ytag.upper(), fontsize=16)
+                zstring = ''
+                for m in range(len(ztag[p])):
+                    zstring += r"$\bf{" + ztag[p][m].replace('_', ' ').upper() + '=' + str(ztick[p][m]) + '}$ '
+                ax[p].set_title('Parameter ' + zstring, fontsize=18)
                 ax[p].set_xticks(np.arange(0.5, len(xtick) + 0.5), labels=xtick, fontsize=14)
-                plt.setp(ax[p].get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+                plt.setp(ax[p].get_xticklabels(), rotation=0, ha="center", rotation_mode="anchor")
                 ax[p].set_yticks(np.arange(0.5, len(ytick) + 0.5), labels=ytick, fontsize=14)
                 for h in range(len(xtick)):
                     for j in range(len(ytick)):
                         ax[p].text(h + 0.5, j + 0.5, str(round(test_values[j, h, p], 4)),
-                                   ha="center", va="center", color="k", fontweight='bold', fontsize=10)
-            fig.suptitle('Test score sweep ' + ztag.upper() + ' with ' + algorithm.upper() +
+                                   ha="center", va="center", color="k", fontweight='bold', fontsize=12)
+            fig.suptitle('Test score parameter sweep with ' + algorithm.upper() +
                          '\n' + str(fixed_params), fontsize=24)
             plt.subplots_adjust(top=0.85)
         fig.tight_layout()
