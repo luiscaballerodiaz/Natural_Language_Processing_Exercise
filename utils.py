@@ -64,10 +64,14 @@ def cross_grid_validation(param_grid, X_train, y_train, X_test, y_test, scoring,
     return grid_search
 
 
-def logreg_coeffs_comparison(X_train, y_train, dataplot, subjects, ngrams=1, C=1):
-    param_grid = [{'classifier': [], 'preprocess': [],
-                  'preprocess__stop_words': ['english'], 'preprocess__ngram_range': [(1, ngrams)], 'classifier__C': []}]
-    model = create_model('logistic regression')
+def linearmodel_coeffs_comparison(X_train, y_train, dataplot, subjects, max_df=1.0, min_df=1, stopwords=None,
+                                  ngrams=1, C=1, logreg=True):
+    param_grid = [{'classifier': [], 'preprocess': [], 'preprocess__max_df': [max_df], 'preprocess__min_df': [min_df],
+                  'preprocess__stop_words': [stopwords], 'preprocess__ngram_range': [(1, ngrams)], 'classifier__C': []}]
+    if logreg:
+        model = create_model('logistic regression')
+    else:
+        model = create_model('linear svc')
     param_grid[0]['classifier'] = [model]
     param_grid[0]['classifier__C'] = [C]
     for i in range(2):
@@ -84,8 +88,8 @@ def logreg_coeffs_comparison(X_train, y_train, dataplot, subjects, ngrams=1, C=1
         for j in range(coeffs.shape[0]):
             max_coeffs = np.argsort(-coeffs[j, :])
             min_coeffs = np.argsort(coeffs[j, :])
-            dataplot.plot_logreg_coeffs(coeffs[j], max_coeffs, min_coeffs, feature_names,
-                                        subjects[j], C, preprocess, ngrams)
+            dataplot.plot_linearmodel_coeffs(coeffs[j], max_coeffs, min_coeffs, feature_names, logreg,
+                                             subjects[j], C, preprocess, ngrams)
 
 
 def create_preprocess(pre):
@@ -135,15 +139,11 @@ def param_sweep_matrix(dataplot, params, test_score):
     models = []
     model = ''
     for i in range(len(params)):
-        for j in range(len(params[i])):
-            string = str(params[j]['classifier'])
-            for k in range(len(str(string))):
-                if string[k] == '(':
-                    model = string[:k]
-                    break
-            else:
-                continue
-            break
+        string = str(params[i]['classifier'])
+        for k in range(len(string)):
+            if string[k] == '(':
+                model = string[:k]
+                break
         if model not in models:
             models.append(model)
     for m in range(len(models)):
@@ -152,7 +152,7 @@ def param_sweep_matrix(dataplot, params, test_score):
         feat = []
         for i in range(len(params)):
             string = str(params[i]['classifier'])
-            for k in range(len(str(string))):
+            for k in range(len(string)):
                 if string[k] == '(':
                     model = string[:k]
                     break
@@ -202,11 +202,11 @@ def param_sweep_matrix(dataplot, params, test_score):
         if len(feat_sweep) == 0:
             test_matrix = np.array([test])
             dataplot.plot_params_sweep(models[m], test_matrix, feat_name_unique)
-        if len(feat_sweep) == 1:
+        elif len(feat_sweep) == 1:
             test_matrix = np.array([test])
             dataplot.plot_params_sweep(models[m], test_matrix, feat_name_unique,
                                        xtick=feat_sweep[0], xtag=feat_name_sweep[0])
-        if len(feat_sweep) == 2:
+        elif len(feat_sweep) == 2:
             test_matrix = np.zeros([len(feat_sweep[0]), len(feat_sweep[1])])
             for j in range(len(feat_sweep[0])):
                 for h in range(len(feat_sweep[1])):
@@ -219,7 +219,7 @@ def param_sweep_matrix(dataplot, params, test_score):
             dataplot.plot_params_sweep(models[m], test_matrix, feat_name_unique,
                                        xtick=feat_sweep[1], xtag=feat_name_sweep[1],
                                        ytick=feat_sweep[0], ytag=feat_name_sweep[0])
-        if len(feat_sweep) >= 3:
+        elif len(feat_sweep) >= 3:
             feat_sweep_bu = feat_sweep.copy()
             feat_name_sweep_bu = feat_name_sweep.copy()
             feat_index_bu = feat_index.copy()
