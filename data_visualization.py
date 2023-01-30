@@ -13,7 +13,6 @@ class DataPlots:
         self.fig_width = 20
         self.fig_height = 10
         self.bar_width = 0.25
-        self.subplots_row = 2
         self.max_words = 100
         self.subplot_row = 2
 
@@ -82,13 +81,13 @@ class DataPlots:
             features_subject[i] = vect.get_feature_names_out()
             top_words[i] = repeat[repeat_ind[:max_words]]
             xtick_subject[i] = features_subject[i][repeat_ind[:max_words]]
-        fig, axes = plt.subplots(math.ceil(len(subjects) / self.subplots_row), self.subplots_row,
+        fig, axes = plt.subplots(math.ceil(len(subjects) / self.subplot_row), self.subplot_row,
                                  figsize=(self.fig_width, self.fig_height))
-        spare_axes = self.subplots_row - len(subjects) % self.subplots_row
-        if spare_axes == self.subplots_row:
+        spare_axes = self.subplot_row - len(subjects) % self.subplot_row
+        if spare_axes == self.subplot_row:
             spare_axes = 0
-        for axis in range(self.subplots_row - 1, self.subplots_row - 1 - spare_axes, -1):
-            fig.delaxes(axes[math.ceil(len(subjects) / self.subplots_row) - 1, axis])
+        for axis in range(self.subplot_row - 1, self.subplot_row - 1 - spare_axes, -1):
+            fig.delaxes(axes[math.ceil(len(subjects) / self.subplot_row) - 1, axis])
         ax = axes.ravel()
         for j in range(len(subjects)):
             ax[j].set_xticks(range(1, max_words + 1), xtick_subject[j], ha='center', rotation=90)
@@ -174,13 +173,13 @@ class DataPlots:
             length_subject[i] = np.sum(bag_of_words.toarray(), axis=1)
             print('Number of sample word lengths for subject {}: {}'.format(subject, len(length_subject[i])))
         print('\n')
-        fig, axes = plt.subplots(math.ceil(len(subjects) / self.subplots_row), self.subplots_row,
+        fig, axes = plt.subplots(math.ceil(len(subjects) / self.subplot_row), self.subplot_row,
                                  figsize=(self.fig_width, self.fig_height))
-        spare_axes = self.subplots_row - len(subjects) % self.subplots_row
-        if spare_axes == self.subplots_row:
+        spare_axes = self.subplot_row - len(subjects) % self.subplot_row
+        if spare_axes == self.subplot_row:
             spare_axes = 0
-        for axis in range(self.subplots_row - 1, self.subplots_row - 1 - spare_axes, -1):
-            fig.delaxes(axes[math.ceil(len(subjects) / self.subplots_row) - 1, axis])
+        for axis in range(self.subplot_row - 1, self.subplot_row - 1 - spare_axes, -1):
+            fig.delaxes(axes[math.ceil(len(subjects) / self.subplot_row) - 1, axis])
         ax = axes.ravel()
         for i in range(len(subjects)):
             counts, edges, bars = ax[i].hist(length_subject[i], histtype='bar', bins=bins, alpha=0.25, color='b')
