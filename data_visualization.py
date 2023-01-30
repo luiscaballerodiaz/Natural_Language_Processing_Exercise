@@ -281,7 +281,7 @@ class DataPlots:
                 else:
                     fig.delaxes(axes[math.ceil(len(ztick) / self.subplot_row) - 1, axis])
             ax = axes.ravel()
-            for p in range(len(ax)):
+            for p in range(len(ztick)):
                 pcm = ax[p].pcolormesh(test_values[:, :, p], cmap=plt.cm.PuBuGn)
                 divider = make_axes_locatable(ax[p])
                 cax = divider.append_axes('right', size='5%', pad=0.05)
