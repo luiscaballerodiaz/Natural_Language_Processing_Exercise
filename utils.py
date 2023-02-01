@@ -235,6 +235,9 @@ def param_sweep_matrix(dataplot, params, test_score):
                 feat_sweep[index_max] = feat_sweep_bu[i]
                 feat_name_sweep[index_max] = feat_name_sweep_bu[i]
                 feat_index[index_max] = feat_index_bu[i]
+                feat_sweep_bu = feat_sweep.copy()
+                feat_name_sweep_bu = feat_name_sweep.copy()
+                feat_index_bu = feat_index.copy()
             depth = 1
             for i in range(2, len(feat_sweep)):
                 depth *= len(feat_sweep[i])
