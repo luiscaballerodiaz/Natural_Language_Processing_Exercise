@@ -1,12 +1,11 @@
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 import math
 import numpy as np
 
 
-class DataPlots:
+class DataPlot:
     """Class to plot and apply tools to dataset"""
 
     def __init__(self):
@@ -245,63 +244,4 @@ class DataPlots:
         method = str(method)[:str(method).index('(')]
         plt.savefig('Coefficient analysis ' + subject.upper() + ' - ' + str(method) + ' ' + str(model) + ' model C= ' +
                     str(C) + plt_ngrams + '.png', bbox_inches='tight')
-        plt.clf()
-
-    def plot_params_sweep(self, algorithm, test_values, fixed_params,
-                          xtick='', ytick='', ztick='', xtag='', ytag='', ztag=''):
-        """Plot parameter sweep for the cross validation grid search"""
-        if len(ztick) == 0:
-            fig, ax = plt.subplots(1, 1, figsize=(self.fig_width, self.fig_height))
-            plt.pcolormesh(test_values, cmap=plt.cm.PuBuGn)
-            plt.colorbar()
-            ax.set_xlabel('Parameter sweep ' + xtag.upper(), fontsize=14)
-            ax.set_ylabel('Parameter sweep ' + ytag.upper(), fontsize=14)
-            ax.set_title('Test score sweep ' + ztag.upper() + ' with ' + algorithm.upper() +
-                         '\n' + str(fixed_params), fontsize=24)
-            ax.set_xticks(np.arange(0.5, len(xtick) + 0.5), labels=xtick, fontsize=14)
-            plt.setp(ax.get_xticklabels(), rotation=0, ha="right", rotation_mode="anchor")
-            ax.set_yticks(np.arange(0.5, len(ytick) + 0.5), labels=ytick, fontsize=14)
-            ax.text(0.5, 0.5, str(round(test_values[0, 0], 4)),
-                    ha="center", va="center", color="k", fontweight='bold', fontsize=10)
-            for h in range(len(xtick)):
-                ax.text(h + 0.5, 0.5, str(round(test_values[0, h], 4)),
-                        ha="center", va="center", color="k", fontweight='bold', fontsize=10)
-                for j in range(len(ytick)):
-                    ax.text(h + 0.5, j + 0.5, str(round(test_values[j, h], 4)),
-                            ha="center", va="center", color="k", fontweight='bold', fontsize=10)
-        else:
-            fig, axes = plt.subplots(round(math.ceil(len(ztick)) / self.subplot_row), self.subplot_row,
-                                     figsize=(self.fig_width, self.fig_height))
-            spare_axes = self.subplot_row - len(ztick) % self.subplot_row
-            if spare_axes == self.subplot_row:
-                spare_axes = 0
-            for axis in range(self.subplot_row - 1, self.subplot_row - 1 - spare_axes, -1):
-                if (math.ceil(len(ztick) / self.subplot_row) - 1) == 0:
-                    fig.delaxes(axes[axis])
-                else:
-                    fig.delaxes(axes[math.ceil(len(ztick) / self.subplot_row) - 1, axis])
-            ax = axes.ravel()
-            for p in range(len(ztick)):
-                pcm = ax[p].pcolormesh(test_values[:, :, p], cmap=plt.cm.PuBuGn)
-                divider = make_axes_locatable(ax[p])
-                cax = divider.append_axes('right', size='5%', pad=0.05)
-                fig.colorbar(pcm, cax=cax, orientation='vertical')
-                ax[p].set_xlabel('Parameter sweep ' + xtag.upper(), fontsize=16)
-                ax[p].set_ylabel('Parameter sweep ' + ytag.upper(), fontsize=16)
-                zstring = ''
-                for m in range(len(ztag[p])):
-                    zstring += r"$\bf{" + ztag[p][m].replace('_', ' ').upper() + '=' + str(ztick[p][m]) + '}$ '
-                ax[p].set_title('Parameter ' + zstring, fontsize=18)
-                ax[p].set_xticks(np.arange(0.5, len(xtick) + 0.5), labels=xtick, fontsize=14)
-                plt.setp(ax[p].get_xticklabels(), rotation=0, ha="center", rotation_mode="anchor")
-                ax[p].set_yticks(np.arange(0.5, len(ytick) + 0.5), labels=ytick, fontsize=14)
-                for h in range(len(xtick)):
-                    for j in range(len(ytick)):
-                        ax[p].text(h + 0.5, j + 0.5, str(round(test_values[j, h, p], 4)),
-                                   ha="center", va="center", color="k", fontweight='bold', fontsize=12)
-            fig.suptitle('Test score parameter sweep with ' + algorithm.upper() +
-                         '\n' + str(fixed_params), fontsize=24)
-            plt.subplots_adjust(top=0.85)
-        fig.tight_layout()
-        plt.savefig('Parameter sweep ' + algorithm.upper() + ' algorithm.png', bbox_inches='tight')
-        plt.clf()
+        plt.close()

@@ -1,11 +1,14 @@
 import pandas as pd
 import utils
-from data_visualization import DataPlots
+from data_visualization import DataPlot
+from gridsearch_postprocess import GridSearchPostProcess
 from sklearn.model_selection import train_test_split
 
 
-visualization = DataPlots()
-pd.set_option('display.max_columns', None)
+visualization = DataPlot()  # Instantiate an object for DataPlot to manage plots in this exercise
+sweep = GridSearchPostProcess()  # Instantiate an object for GridSearchPostProcess to manage the grid search results
+pd.set_option('display.max_columns', None)  # Enable option to display all dataframe columns
+pd.set_option('display.max_colwidth', None)  # Enable printing the whole column content
 sourcedf = pd.read_csv('subjects-questions.csv')
 print('Full dataset overview:\n {}\n'.format(sourcedf.head()))
 subjects_list = [''] * 3
@@ -24,7 +27,7 @@ subjects_list[1], cases_list[1] = utils.overview_data(y_train, data[1])
 subjects_list[2], cases_list[2] = utils.overview_data(y_test, data[2])
 visualization.pie_plot(subjects_list, cases_list, data)
 
-# Coefficients analysis
+# # Coefficients analysis
 utils.linearmodel_coeffs_comparison(X_train, y_train, visualization, subjects_list[1],
                                     max_df=0.25, min_df=1, stopwords=None, C=0.05, ngrams=2, logreg=False)
 
@@ -43,4 +46,4 @@ params = [
 grid = utils.cross_grid_validation(params, X_train, y_train, X_test, y_test, scoring, 5)
 pd_grid = pd.DataFrame(grid.cv_results_)
 print(pd_grid)
-utils.param_sweep_matrix(visualization, params=pd_grid['params'], test_score=pd_grid['mean_test_score'])
+sweep.param_sweep_matrix(params=pd_grid['params'], test_score=pd_grid['mean_test_score'])
